@@ -1,26 +1,28 @@
-#include <nds.h>
-#include <filesystem.h>
+extern "C" {
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wignored-qualifiers"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
+    #include <nds.h>
+    #include <filesystem.h>
 
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
-#include <luajit.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <dirent.h>
+
+    #include <lua.h>
+    #include <lualib.h>
+    #include <lauxlib.h>
+    #include <luajit.h>
+
+    #pragma GCC diagnostic pop
+}
+
 
 // #include "luamain.h"
 
-// #define lambda(lambda$_ret, lambda$_args, lambda$_body)\
-// ({\
-// lambda$_ret lambda$__anon$ lambda$_args\
-// lambda$_body\
-// &lambda$__anon$;\
-// })
-
 typedef char* string;
+typedef const char* cstring;
 
 
 void sleep(const int ms) {
@@ -87,7 +89,7 @@ int lua_mypcall(lua_State* L, int nargs, int nret) {
 }
 
 
-int load_lua(lua_State *L, const string code) {
+int load_lua(lua_State *L, cstring code) {
     luaL_openlibs(L);
     luaL_register(L, "foolib", foolib);
     
@@ -95,7 +97,7 @@ int load_lua(lua_State *L, const string code) {
     // luaL_dostring(L, code);
     
     int err;
-    if (err = luaL_loadstring(L, code)) {
+    if ((err = luaL_loadstring(L, code))) {
         printf("Error loading Lua code... (%d)\n", err);
         return 1;
     };
@@ -109,7 +111,8 @@ int load_lua(lua_State *L, const string code) {
 }
 
 
-int read_file(const string path, int (*loader)(const string content)) {
+template<typename Loader>
+int read_file(cstring path, Loader loader) {
     int err = 0;
     
     FILE* inf = fopen(path, "rb");
@@ -119,7 +122,7 @@ int read_file(const string path, int (*loader)(const string content)) {
     }
     // debug("file opened");
 
-    int len;
+    size_t len;
     fseek(inf, 0, SEEK_END);
     len = ftell(inf);
     fseek(inf, 0, SEEK_SET);
@@ -140,10 +143,6 @@ int read_file(const string path, int (*loader)(const string content)) {
 }
 
 
-lua_State *_L;
-
-int _lua_loader(const string content) { return load_lua(_L, content); }
-
 int main() {
     // NOTE: on MelonDS, disable JIT
     consoleDemoInit();
@@ -157,11 +156,10 @@ int main() {
     }
 
     lua_State *L = luaL_newstate();
-    _L = L;
-    if (read_file("nitro:/luamain.lua", _lua_loader)) {
+    auto loader = [&](cstring content) { return load_lua(L, content); };
+    if (read_file("nitro:/luamain.lua", loader)) {
         return hang();
     }
-    _L = NULL;
 
     if (lua_mypcall(L, 0, LUA_MULTRET)) { }
 

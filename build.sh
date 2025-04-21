@@ -47,7 +47,6 @@ xcc_args=(
     "${arch_args[@]}"
     -c
     -g
-    --std=gnu99
     -Wall
     -Wextra
     -fomit-frame-pointer
@@ -80,6 +79,7 @@ else
 fi
 
 XCC="$DEVKITARM/bin/arm-none-eabi-gcc"
+XPP="$DEVKITARM/bin/arm-none-eabi-g++"
 XAS="$DEVKITARM/bin/arm-none-eabi-as"
 XAR="$DEVKITARM/bin/arm-none-eabi-ar"
 XLD="$DEVKITARM/bin/arm-none-eabi-gcc"
@@ -209,6 +209,7 @@ build_test() (
     cd "$DIR_OUT"
     local cc_args=(
         "${xcc_args[@]}"
+        --std=c++23
         -I"$DIR_LJ/src"
         -I"$DIR_SRC"
         -I"$DIR_OUT"
@@ -227,11 +228,11 @@ build_test() (
     # sed -i 's/\}/, 0x00}/' "$DIR_OUT/luamain.c"
     
     local src=(
-        "$DIR_SRC/test.c"
+        "$DIR_SRC/test.cpp"
         # "$DIR_OUT/luamain.c"
     )
     for file in "${src[@]}"; do
-        "$XCC"  "${cc_args[@]}"  "$file"
+        "$XPP"  "${cc_args[@]}"  "$file"
     done
 
     src=( "${src[@]##*/}" )
