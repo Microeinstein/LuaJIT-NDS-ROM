@@ -1,0 +1,34 @@
+{
+    "folders": [
+        {"path": "."},
+        {"path": "foreign/luajit"},
+        {"path": "/opt/devkitpro"}
+    ],
+    "settings": {},
+    "tasks": {
+        "version": "2.0.0",
+        "tasks": [
+            {
+                "label": "BUILD",
+                "type": "process",
+                "command": "bash",
+                "args": ["build.sh"],
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                }
+            },
+            {
+                "label": "MELON",
+                "type": "process",
+                "command": "melonDS",
+                "args": ["out/test.nds"]
+            }
+        ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [],
+        "compounds": []
+    },
+}
