@@ -47,6 +47,7 @@ xcc_args=(
     "${arch_args[@]}"
     -c
     -g
+    --std=gnu99
     -Wall
     -Wextra
     -fomit-frame-pointer
@@ -142,6 +143,7 @@ mk_buildvm() (
     gcc "${buildvm_args[@]}"
 )
 
+
 gen_vm() (
     cd "$DIR_LJ/src"
     local all_libs=(
@@ -189,6 +191,7 @@ build_target() (
     "$XAR" rc "$target"  ljamalg.o lj_vm.o
 )
 
+
 # /opt/devkitpro/libnds/include
 # /opt/devkitpro/calico/include
 # /opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/14.2.0/plugin/include
@@ -220,12 +223,12 @@ build_test() (
         "${xld_args[@]}"
     )
 
-    raw2c "$DIR_SRC/luamain.lua"
-    sed -i 's/\}/, 0x00}/' "$DIR_OUT/luamain.c"
+    # raw2c "$DIR_SRC/luamain.lua"
+    # sed -i 's/\}/, 0x00}/' "$DIR_OUT/luamain.c"
     
     local src=(
         "$DIR_SRC/test.c"
-        "$DIR_OUT/luamain.c"
+        # "$DIR_OUT/luamain.c"
     )
     for file in "${src[@]}"; do
         "$XCC"  "${cc_args[@]}"  "$file"
@@ -235,6 +238,7 @@ build_test() (
     src=( "${src[@]//.*/.o}" )
     "$XLD"  "${ld_args[@]}"  "${src[@]}"  "${libs[@]}"
 )
+
 
 build_nds() (
     cd "$DIR_OUT"
