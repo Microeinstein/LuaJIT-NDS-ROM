@@ -1,9 +1,15 @@
+#include <nds.h>
+#include <filesystem.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
+
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
 #include <luajit.h>
-
-#include <nds.h>
 
 #include "luamain.h"
 
@@ -78,12 +84,46 @@ void run_lua(lua_State *L) {
 }
 
 
+void read_nitro() {
+    if (!nitroFSInit(NULL)) {
+        iprintf("Cannot initialize nitro FS...\n");
+        return;
+    }
+    
+    // now, try reading a file to make sure things are working OK.
+    FILE* inf = fopen("nitro:/file1.txt", "rb");
+    if (!inf) {
+        iprintf("Cannot open nitro file...\n");
+        return;
+    }
+
+    int len;
+    fseek(inf, 0, SEEK_END);
+    len = ftell(inf);
+    fseek(inf, 0, SEEK_SET);
+
+    iprintf("\nthe following %d bytes message\nfrom file1.txt is\nbrought to you by fread:\n",len);
+    {
+        char *entireFile = (char*)malloc(len+1);
+        entireFile[len] = 0;
+        if (fread(entireFile, 1, len, inf) != len)
+            iprintf("savage error reading the bytes from the file!\n");
+        else
+            iprintf("%s\n-done-\n", entireFile);
+        free(entireFile);
+    }
+
+    fclose(inf);
+}
+
+
 int main(){
     // NOTE: on MelonDS, disable JIT
     consoleDemoInit();
     defaultExceptionHandler();
 
 	iprintf("Hello from C\n");
+    read_nitro();
 
     lua_State *L = luaL_newstate();
     run_lua(L);

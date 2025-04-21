@@ -35,12 +35,21 @@ arch_args=(
     -mthumb
 )
 
+libs=(
+    -lfat
+    -lnds9
+    -lcalico_ds9
+    -lluajitD
+    -lm
+)
+
 xcc_args=(
     "${arch_args[@]}"
     -c
-    -fomit-frame-pointer
+    -g
     -Wall
     -Wextra
+    -fomit-frame-pointer
     -ffunction-sections
     -fdata-sections
     -DARM9
@@ -53,8 +62,6 @@ xld_args=(
     -specs="$DEVKITPRO/calico/share/ds9.specs"
     -L"$DEVKITPRO/libnds/lib"
     -L"$DEVKITPRO/calico/lib"
-    -lnds9
-    -lcalico_ds9
 )
 
 if "$debug_build"; then
@@ -207,12 +214,10 @@ build_test() (
     )
     # shellcheck disable=SC2054
     local ld_args=(
-        "${xld_args[@]}"
         -Wl,-Map,test.map
-        -L"$DIR_LJ/src"
         -o test.elf
-        -lluajitD
-        -lm
+        -L"$DIR_LJ/src"
+        "${xld_args[@]}"
     )
 
     raw2c "$DIR_SRC/luamain.lua"
@@ -223,22 +228,28 @@ build_test() (
         "$DIR_OUT/luamain.c"
     )
     for file in "${src[@]}"; do
-        "$XCC" "${cc_args[@]}" "$file"
+        "$XCC"  "${cc_args[@]}"  "$file"
     done
 
     src=( "${src[@]##*/}" )
     src=( "${src[@]//.*/.o}" )
-    "$XLD"  "${src[@]}"  "${ld_args[@]}"
+    "$XLD"  "${ld_args[@]}"  "${src[@]}"  "${libs[@]}"
 )
 
 build_nds() (
     cd "$DIR_OUT"
+    # local nitro=()
+    # mapfile -t nitro < <(find "$DIR_SRC/nitro" -type f)
+    # local IFS=','
+    # local nitro_ls="${nitro[*]}"
+
     local args=(
         -c test.nds
         -9 test.elf
         -7 "$DEVKITPRO/calico/bin/ds7_maine.elf"
         -b "$DEVKITPRO/calico/share/nds-icon.bmp"
         "LuaJIT;Description;Description2"
+        -d "$DIR_SRC/nitro"
     )
     "$DEVKITPRO/tools/bin/ndstool" "${args[@]}"
 )
