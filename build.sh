@@ -7,6 +7,7 @@ SELF="$(realpath -ms "$SELF")"
 cd "$(dirname "$SELF")" || exit 99
 
 DIR_LJ="$PWD/foreign/luajit"
+DIR_GFX="$PWD/gfx"
 DIR_SRC="$PWD/src"
 DIR_OUT="$PWD/out"
 
@@ -49,6 +50,8 @@ xcc_args=(
     -g
     -Wall
     -Wextra
+    -Wfatal-errors
+    # -fmax-errors=3
     -fomit-frame-pointer
     -ffunction-sections
     -fdata-sections
@@ -207,9 +210,12 @@ build_target() (
 
 build_test() (
     cd "$DIR_OUT"
+    local asm_args=(
+        -x assembler-with-cpp
+    )
     local cc_args=(
         "${xcc_args[@]}"
-        --std=c++23
+        --std=gnu++23
         -I"$DIR_LJ/src"
         -I"$DIR_SRC"
         -I"$DIR_OUT"
@@ -226,13 +232,21 @@ build_test() (
 
     # raw2c "$DIR_SRC/luamain.lua"
     # sed -i 's/\}/, 0x00}/' "$DIR_OUT/luamain.c"
+    grit "$DIR_GFX/NDS-true-bios-16.bmp" -gt -mR! -m! -gB8 -ah$((11 * 96)) -tw11 -th11 -fts -o'font'
+    # grit "$DIR_GFX/erusfont.bmp" -gt -mR! -m! -gB8 -aw6 -ah$((11 * 96)) -tw6 -th15 -fts -o'font'
+    # grit "$DIR_GFX/out.bmp" -gt -mR! -m! -gB8 -ah$((6 * 96)) -tw6 -th6 -fts -o'font'
+    # grit "$DIR_GFX/font.bmp" -gt -mR! -m! -gB8 -fts -o'font'
     
     local src=(
         "$DIR_SRC/test.cpp"
-        # "$DIR_OUT/luamain.c"
+        "$DIR_OUT/font.s"
     )
     for file in "${src[@]}"; do
-        "$XPP"  "${cc_args[@]}"  "$file"
+        if [[ "$file" == *.s ]]; then
+            "$XPP" "${asm_args[@]}" "${cc_args[@]}"  "$file"
+        else
+            "$XPP"  "${cc_args[@]}"  "$file"
+        fi
     done
 
     src=( "${src[@]##*/}" )

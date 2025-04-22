@@ -15,11 +15,12 @@ extern "C" {
     #include <lauxlib.h>
     #include <luajit.h>
 
+    // #include "luamain.h"
+    #include "font.h"
+
     #pragma GCC diagnostic pop
 }
 
-
-// #include "luamain.h"
 
 typedef char* string;
 typedef const char* cstring;
@@ -143,9 +144,69 @@ int read_file(cstring path, Loader loader) {
 }
 
 
+void init_console() {
+    consoleDemoInit();
+    return;
+
+	const int map_base = 20;
+    const int tile_base = 0;
+
+	videoSetMode(0);
+
+	videoSetModeSub(MODE_5_2D);
+	vramSetBankC(VRAM_C_SUB_BG);
+
+	PrintConsole *console = consoleInit(
+        0, 3, BgType_ExRotation, BgSize_ER_256x256,
+        map_base, tile_base, false, false
+    );
+
+	int offset = 0;
+
+    auto set_font = [&]() {
+        ConsoleFont font;
+
+        font.gfx = (u16*)fontTiles;
+        font.pal = (u16*)fontPal;
+        font.convertSingleColor = false;
+        font.numColors =  fontPalLen / 2;
+        font.bpp = 8;
+
+        // font.numChars = 71;
+        font.numChars = 97;
+
+        // width * height * palette * chars
+        // font.asciiOffset = 32;
+        font.asciiOffset = offset;
+
+        consoleSetFont(console, &font);
+
+        printf("Custom Font Demo\n");
+    };
+    set_font();
+
+    while(pmMainLoop()) {
+		scanKeys();
+		u32 keys = keysHeld();
+
+		if (keys & KEY_UP)   offset--;
+		if (keys & KEY_DOWN) offset++;
+
+        swiWaitForVBlank();
+
+        if (keys) {
+            set_font();
+            sleep(16);
+        }
+
+        // bgUpdate();
+    }
+}
+
+
 int main() {
     // NOTE: on MelonDS, disable JIT
-    consoleDemoInit();
+    init_console();
     defaultExceptionHandler();
 
 	printf("Hello from C\n");
