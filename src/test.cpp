@@ -4,6 +4,7 @@ extern "C" {
 
     #include <nds.h>
     #include <filesystem.h>
+    #include <fat.h>
 
     #include <stdio.h>
     #include <stdlib.h>
@@ -221,6 +222,18 @@ void init_console() {
 }
 
 
+#define USE_FAT 1
+// #define USE_NITRO 1
+
+#ifdef USE_NITRO
+#define DISK_ROOT "nitro:"
+#define DISK_INIT nitroFSInit(NULL)
+#else
+#define DISK_ROOT "/lua"
+#define DISK_INIT fatInitDefault()
+#endif
+
+
 int main() {
     // NOTE: on MelonDS, disable JIT
     init_console();
@@ -235,14 +248,14 @@ int main() {
 
 	printf("Hello from C\n");
 
-    if (!nitroFSInit(NULL)) {
-        printf("Cannot initialize nitro FS...\n");
+    if (!DISK_INIT) {
+        printf("Cannot initialize disk...\n");
         return hang();
     }
 
     lua_State *L = luaL_newstate();
     auto loader = [&](cstring content) { return load_lua(L, content); };
-    if (read_file("nitro:/luamain.lua", loader)) {
+    if (read_file(DISK_ROOT "/luamain.lua", loader)) {
         return hang();
     }
 

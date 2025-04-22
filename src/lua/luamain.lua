@@ -1,4 +1,4 @@
-package.path = 'nitro:/?.lua;nitro:/?/init.lua'
+package.path = '/lua/?.lua;/lua/?/init.lua;nitro:/?.lua;nitro:/?/init.lua'
 
 require('foolib')
 

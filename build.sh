@@ -232,7 +232,7 @@ build_test() (
 
     # raw2c "$DIR_SRC/luamain.lua"
     # sed -i 's/\}/, 0x00}/' "$DIR_OUT/luamain.c"
-    grit "$DIR_GFX/NDS-true-bios-16.bmp" -gt -mR! -m! -gB8 -ah$((11 * 96)) -tw11 -th11 -fts -o'font'
+    # grit "$DIR_GFX/NDS-true-bios-16.bmp" -gt -mR! -m! -gB8 -ah$((11 * 96)) -tw11 -th11 -fts -o'font'
     # grit "$DIR_GFX/erusfont.bmp" -gt -mR! -m! -gB8 -aw6 -ah$((11 * 96)) -tw6 -th15 -fts -o'font'
     # grit "$DIR_GFX/out.bmp" -gt -mR! -m! -gB8 -ah$((6 * 96)) -tw6 -th6 -fts -o'font'
     # grit "$DIR_GFX/font.bmp" -gt -mR! -m! -gB8 -fts -o'font'
@@ -266,9 +266,10 @@ build_nds() (
         -c test.nds
         -9 test.elf
         -7 "$DEVKITPRO/calico/bin/ds7_maine.elf"
-        -b "$DEVKITPRO/calico/share/nds-icon.bmp"
-        "LuaJIT;Description;Description2"
-        -d "$DIR_SRC/nitro"
+        # -b "$DEVKITPRO/calico/share/nds-icon.bmp"
+        -b "$DIR_GFX/favicon.bmp"
+        "LuaJIT;description;description2"
+        -d "$DIR_SRC/lua"
     )
     "$DEVKITPRO/tools/bin/ndstool" "${args[@]}"
 )
