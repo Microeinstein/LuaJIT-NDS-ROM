@@ -35,7 +35,9 @@ void sleep(const int ms) {
 
 int hang() {
     while(pmMainLoop()) {
+        int key = keyboardUpdate();
 		swiWaitForVBlank();
+		scanKeys();
     }
     return 0;
 }
@@ -144,8 +146,23 @@ int read_file(cstring path, Loader loader) {
 }
 
 
+PrintConsole topScreen;
+// PrintConsole bottomScreen;
+
 void init_console() {
-    consoleDemoInit();
+    // consoleDemoInit();
+
+	videoSetMode(MODE_0_2D);
+	videoSetModeSub(MODE_0_2D);
+
+	vramSetBankA(VRAM_A_MAIN_BG);
+	vramSetBankC(VRAM_C_SUB_BG);
+
+	consoleInit(&topScreen, 3, BgType_Text4bpp, BgSize_T_256x256, 31, 0, true, true);
+	// consoleInit(&bottomScreen, 3,BgType_Text4bpp, BgSize_T_256x256, 31, 0, false, true);
+
+	consoleSelect(&topScreen);
+
     return;
 
 	const int map_base = 20;
@@ -208,6 +225,13 @@ int main() {
     // NOTE: on MelonDS, disable JIT
     init_console();
     defaultExceptionHandler();
+
+	Keyboard *kbd = keyboardDemoInit();
+	keyboardShow();
+    kbd->OnKeyPressed = [](int key) {
+        if (key > 0)
+            printf("%c", key);
+    }; 
 
 	printf("Hello from C\n");
 
