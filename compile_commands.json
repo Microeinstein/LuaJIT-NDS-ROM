@@ -1,0 +1,32 @@
+[
+  {
+    "arguments": [
+      "/opt/devkitpro/devkitARM/bin/arm-none-eabi-g++",
+      "-march=armv5te",
+      "-mtune=arm946e-s",
+      "-mthumb",
+      "-c",
+      "-g",
+      "-Wall",
+      "-Wextra",
+      "-Wfatal-errors",
+      "-fomit-frame-pointer",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-DARM9",
+      "-D__NDS__",
+      "-g",
+      "-Og",
+      "-DDEBUG",
+      "--std=gnu++23",
+      "-I/mnt/files/Sviluppo/Labo/LuaJITDS/foreign/luajit/src",
+      "-I/mnt/files/Sviluppo/Labo/LuaJITDS/src",
+      "-I/mnt/files/Sviluppo/Labo/LuaJITDS/out",
+      "-I/opt/devkitpro/libnds/include",
+      "-I/opt/devkitpro/calico/include",
+      "/mnt/files/Sviluppo/Labo/LuaJITDS/src/test.cpp"
+    ],
+    "directory": "/mnt/files/Sviluppo/Labo/LuaJITDS/out",
+    "file": "/mnt/files/Sviluppo/Labo/LuaJITDS/src/test.cpp"
+  }
+]

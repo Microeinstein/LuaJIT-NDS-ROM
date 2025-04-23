@@ -17,7 +17,7 @@ extern "C" {
     #include <luajit.h>
 
     // #include "luamain.h"
-    #include "font.h"
+    // #include "font.h"
 
     #pragma GCC diagnostic pop
 }
@@ -166,6 +166,7 @@ void init_console() {
 
     return;
 
+    /*
 	const int map_base = 20;
     const int tile_base = 0;
 
@@ -219,11 +220,12 @@ void init_console() {
 
         // bgUpdate();
     }
+    */
 }
 
 
-#define USE_FAT 1
-// #define USE_NITRO 1
+// #define USE_FAT 1
+#define USE_NITRO 1
 
 #ifdef USE_NITRO
 #define DISK_ROOT "nitro:"

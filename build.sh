@@ -19,6 +19,11 @@ if ! [[ "$DEVKITPRO" ]] || ! [[ -d "$DEVKITPRO/devkitARM" ]]; then
     exit 1
 fi
 
+if [[ ! -v INTERCEPT_REPORT_COMMAND ]]; then
+    # sleep 1
+    exec bear -- bash "$SELF" "$@"
+fi
+
 debug_build=true
 
 # global cc args for target
@@ -37,10 +42,10 @@ arch_args=(
 )
 
 libs=(
+    -lluajitD
     -lfat
     -lnds9
     -lcalico_ds9
-    -lluajitD
     -lm
 )
 
@@ -113,10 +118,10 @@ genfiles_minilua() (
         -D LUAJIT_TARGET=LUAJIT_ARCH_ARM
         -D LJ_TARGET_NDS
         -D LUAJIT_OS=LUAJIT_OS_OTHER
-        -D LUAJIT_DISABLE_JIT
-        -D LUAJIT_DISABLE_FFI
-        # -D JIT
-        # -D FFI
+        # -D LUAJIT_DISABLE_JIT
+        # -D LUAJIT_DISABLE_FFI
+        -D JIT
+        -D FFI
         -o 'host/buildvm_arch.h'
         'vm_arm.dasc'
     )
@@ -137,8 +142,8 @@ mk_buildvm() (
         -I"$DIR_LJ/dynasm"
         -DLUAJIT_TARGET=LUAJIT_ARCH_ARM
         -DLUAJIT_OS=LUAJIT_OS_OTHER
-        -DLUAJIT_DISABLE_JIT
-        -DLUAJIT_DISABLE_FFI
+        # -DLUAJIT_DISABLE_JIT
+        # -DLUAJIT_DISABLE_FFI
         -DLJ_TARGET_NDS=1
         -o 'buildvm'
         'host/buildvm'*.c
@@ -178,7 +183,7 @@ build_target() (
     cd "$DIR_LJ/src"
     local luacc_args=(
         "${xcc_args[@]}"
-        -DLUAJIT_DISABLE_FFI
+        # -DLUAJIT_DISABLE_FFI
         -DLUAJIT_USE_SYSMALLOC
         -DLUAJIT_SECURITY_PRNG=0 # no secure random prng for nintendo ds
     )
@@ -224,8 +229,6 @@ build_test() (
     )
     # shellcheck disable=SC2054
     local ld_args=(
-        -Wl,-Map,test.map
-        -o test.elf
         -L"$DIR_LJ/src"
         "${xld_args[@]}"
     )
@@ -239,7 +242,7 @@ build_test() (
     
     local src=(
         "$DIR_SRC/test.cpp"
-        "$DIR_OUT/font.s"
+        # "$DIR_OUT/font.s"
     )
     for file in "${src[@]}"; do
         if [[ "$file" == *.s ]]; then
@@ -249,9 +252,12 @@ build_test() (
         fi
     done
 
+    # "$XPP"  "${cc_args[@]}"  -fPIC  -o libsimple.o  "$DIR_SRC/libsimple.cpp"
+    # "$XLD"  "${arch_args[@]}" -g  -o "$DIR_SRC/lua/libsimple"  libsimple.o
+
     src=( "${src[@]##*/}" )
     src=( "${src[@]//.*/.o}" )
-    "$XLD"  "${ld_args[@]}"  "${src[@]}"  "${libs[@]}"
+    "$XLD"  -Wl,-Map,test.map  "${ld_args[@]}"  -o test.elf  "${src[@]}"  "${libs[@]}"
 )
 
 
