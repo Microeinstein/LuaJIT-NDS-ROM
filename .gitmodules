@@ -1,3 +1,4 @@
 [submodule "foreign/luajit"]
 	path = foreign/luajit
-	url = git@github.com:Microeinstein/LuaJIT-NDS.git
+	url = https://github.com/Microeinstein/LuaJIT-NDS.git
+	branch = nds
