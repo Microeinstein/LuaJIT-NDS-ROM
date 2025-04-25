@@ -200,19 +200,6 @@ build_target() (
 )
 
 
-# /opt/devkitpro/libnds/include
-# /opt/devkitpro/calico/include
-# /opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/14.2.0/plugin/include
-# /opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/14.2.0/install-tools/include
-# /opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/14.2.0/include
-# /opt/devkitpro/devkitARM/arm-none-eabi/include
-# /opt/devkitpro/devkitARM/include
-
-# /opt/devkitpro/libnds/lib
-# /opt/devkitpro/calico/lib
-# /opt/devkitpro/devkitARM/lib
-# /opt/devkitpro/devkitARM/arm-none-eabi/lib
-
 build_test() (
     cd "$DIR_OUT"
     local asm_args=(

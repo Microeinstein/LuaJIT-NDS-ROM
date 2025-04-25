@@ -4,7 +4,14 @@
 
 <img src="/.repo/melonds_demo_v0.1.png" alt="Demo v0.1" width="98.5%"><br>
 
-## Building
+## Building (BlocksDS)
+
+- [install WonderfulTools and BlocksDS](https://blocksds.skylyrac.net/docs/setup/options/linux/)
+- clone all submodules
+- toggle compilation of LuaJIT at the end of `build.sh`
+- launch `build.blocksds.sh`
+
+## Building (DevkitPro)
 
 - install DevkitPro with NDS packages
 - clone all submodules

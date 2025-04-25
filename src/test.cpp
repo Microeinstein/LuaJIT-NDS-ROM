@@ -5,7 +5,7 @@ extern "C" {
     #include <nds.h>
     #include <filesystem.h>
     #include <fat.h>
-
+    
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
@@ -23,6 +23,32 @@ extern "C" {
 }
 
 
+#if defined(SDK_DEVKITPRO)
+#define PROC_LOOP pmMainLoop()
+
+#elif defined(SDK_BLOCKSDS)
+#define PROC_LOOP 1
+
+#else
+#error "Unknown SDK..."
+
+#endif
+
+
+#if defined(USE_NITRO)
+#define DISK_ROOT "nitro:"
+#define DISK_INIT nitroFSInit(NULL)
+
+#elif defined(USE_FAT)
+#define DISK_ROOT "/lua"
+#define DISK_INIT fatInitDefault()
+
+#else
+#error "Unknown disk library..."
+
+#endif
+
+
 typedef char* string;
 typedef const char* cstring;
 
@@ -35,8 +61,8 @@ void sleep(const int ms) {
 
 
 int hang() {
-    while(pmMainLoop()) {
-        int key = keyboardUpdate();
+    while (PROC_LOOP) {
+        // int key = keyboardUpdate();
 		swiWaitForVBlank();
 		scanKeys();
     }
@@ -100,18 +126,22 @@ int load_lua(lua_State *L, cstring code) {
     // string code = "print('hello from lua')";
     // luaL_dostring(L, code);
     
-    int err;
+    int hpos = lua_gettop(L) - 0;
+    lua_pushcfunction(L, msghandler);
+    lua_insert(L, hpos);
+    int err = 0;
     if ((err = luaL_loadstring(L, code))) {
-        printf("Error loading Lua code... (%d)\n", err);
-        return 1;
+        printf("Error loading Lua code...\n%s\n", lua_tostring(L, -1));
+        lua_pop(L, 1);
     };
+    lua_remove(L, hpos);
     
     // if (luaL_loadbufferx(L, code, luamain_size, "luamain", "t") == LUA_OK) {
     //     if (lua_pcall(L, 0, LUA_MULTRET, 0) == LUA_OK) {
     //         lua_pop(L, lua_gettop(L));
     //     }
     // }
-    return 0;
+    return err;
 }
 
 
@@ -224,20 +254,29 @@ void init_console() {
 }
 
 
-// #define USE_FAT 1
-#define USE_NITRO 1
+// forked from https://github.com/blocksds/libnds/blob/9880a2d4fe35bab70ebb2389064663419c70994c/source/arm9/libc/iob.c#L77
+static int stdin_getc_keyboard(FILE *file) {
+    (void)file;
+    sassert(REG_IME != 0, "IRQs must be enabled");
 
-#ifdef USE_NITRO
-#define DISK_ROOT "nitro:"
-#define DISK_INIT nitroFSInit(NULL)
-#else
-#define DISK_ROOT "/lua"
-#define DISK_INIT fatInitDefault()
-#endif
+    int c = -1;
+    while (true) {
+        scanKeys();
+        c = keyboardUpdate();
+        if (c > 0)
+            break;
+        cothread_yield_irq(IRQ_VBLANK);
+    }
+    return c;
+}
 
 
-int main() {
+int main(int argc, char **argv) {
+    (void)argc; (void)argv;
     // NOTE: on MelonDS, disable JIT
+
+    stdin->get = stdin_getc_keyboard;
+
     init_console();
     defaultExceptionHandler();
 
@@ -245,7 +284,7 @@ int main() {
 	keyboardShow();
     kbd->OnKeyPressed = [](int key) {
         if (key > 0)
-            printf("%c", key);
+            consolePrintChar(key);
     }; 
 
 	printf("Hello from C\n");

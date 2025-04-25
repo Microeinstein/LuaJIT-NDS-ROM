@@ -1,8 +1,9 @@
 {
     "folders": [
-        {"path": "."},
+        {"path": ".", "name": "project" },
         {"path": "foreign/luajit"},
-        {"path": "/opt/devkitpro"}
+        {"path": "/opt/devkitpro"},
+        {"path": "/opt/blocksds"}
     ],
     "settings": {
         "Lua.workspace.ignoreSubmodules": true,
@@ -12,7 +13,15 @@
         "Lua.workspace.ignoreDir": [
             "trash",
             "foreign",
-        ]
+        ],
+        // "clangd.arguments": [
+        //     "-log=verbose", 
+        //     "-pretty", 
+        //     "--background-index", 
+        //     // for cross compile usage
+        //     // "--query-driver=/bin/arm-buildroot-linux-gnueabihf-g++",
+        //     "--compile-commands-dir=."
+        // ]
     },
     "tasks": {
         "version": "2.0.0",
@@ -28,6 +37,16 @@
                 }
             },
             {
+                "label": "BUILD_BL",
+                "type": "process",
+                "command": "bash",
+                "args": ["build.blocksds.sh"],
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                }
+            },
+            {
                 "label": "MELON",
                 "type": "process",
                 "command": "melonDS",
@@ -37,7 +56,21 @@
     },
     "launch": {
         "version": "0.2.0",
-        "configurations": [],
+        "configurations": [
+            {
+                "type": "gdb",
+                "gdbpath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gdb",
+                "request": "attach",
+                "name": "Attach ARM9",
+                "autorun": ["interrupt"],
+                "executable": "${workspaceFolder:project}/out/test.elf",
+                "stopAtEntry": true,
+                "target": ":3333",
+                "remote": true,
+                "cwd": "${workspaceFolder:project}",
+                "valuesFormatting": "parseText"
+            }
+        ],
         "compounds": []
     },
 }
